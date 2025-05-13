@@ -17,7 +17,7 @@ To use the Tavily API, you'll need an API key. Get yours by signing up at [Tavil
 ### Initializing the Client
 
 ```go
-import "github.com/aiomni/tavily-go/tavily"
+import tavily "github.com/aiomni/tavily-go"
 
 // Create a client with default settings
 client := tavily.NewTavilyClient("your-api-key")
@@ -42,7 +42,7 @@ import (
     "fmt"
     "log"
     
-    "github.com/aiomni/tavily-go/tavily"
+    tavily "github.com/aiomni/tavily-go"
 )
 
 func main() {
@@ -286,6 +286,8 @@ You can provide your own HTTP client to handle specific requirements like custom
 import (
     "net/http"
     "time"
+    
+    tavily "github.com/aiomni/tavily-go"
 )
 
 httpClient := &http.Client{
@@ -316,4 +318,4 @@ This library is licensed under the MIT License.
 
 ## Support
 
-For support, please contact [Tavily support](https://tavily.com/support) or open an issue on the GitHub repository.
+For support, please open an issue on the GitHub repository.
