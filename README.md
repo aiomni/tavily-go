@@ -1,5 +1,7 @@
 # tavily-go
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/aiomni/tavily-go)
+
 A Go client library for the [Tavily API](https://tavily.com), providing programmatic access to Tavily's search, extraction, crawling, and mapping functionalities.
 
 ## Installation
