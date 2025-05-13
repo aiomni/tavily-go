@@ -14,7 +14,7 @@ To use the Tavily API, you'll need an API key. Get yours by signing up at [Tavil
 
 ## JSON Schema Generation
 
-`tavily-go` supports JSON Schema generation for all request and response types using the [invopop/jsonschema](github.com/invopop/jsonschema) package. All structs include appropriate jsonschema tags for automatic schema generation.
+`tavily-go` supports JSON Schema generation for all request and response types using the [invopop/jsonschema](https://github.com/invopop/jsonschema) package. All structs include appropriate jsonschema tags for automatic schema generation.
 
 ## Usage
 
@@ -177,7 +177,7 @@ for i, url := range response.Results {
 
 ## API Reference
 
-All Tavily API structs include jsonschema tags to provide detailed information about parameters and can be used with the [invopop/jsonschema](github.com/invopop/jsonschema) package to generate json schema, which can used for LLM.
+All Tavily API structs include jsonschema tags to provide detailed information about parameters and can be used with the [invopop/jsonschema](https://github.com/invopop/jsonschema) package to generate json schema, which can used for LLM.
 
 ### Search API
 
