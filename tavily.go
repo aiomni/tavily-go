@@ -83,7 +83,6 @@ type TavilySearchImage struct {
 	Description string `json:"description,omitempty"`
 }
 
-
 type TavilyImages []TavilySearchImage
 
 func (m *TavilyImages) UnmarshalJSON(data []byte) error {
@@ -106,12 +105,86 @@ func (m *TavilyImages) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("images: invalid format")
 }
 
+type TavilyExtractRequest struct {
+	URLs          []string `json:"urls" jsonschema:"required,description=The URLs to extract content from."`
+	IncludeImages bool     `json:"include_images,omitempty" jsonschema:"default=false,description=Include a list of images extracted from the URLs in the response."`
+	ExtractDepth  string   `json:"extract_depth,omitempty" jsonschema:"enum=basic,enum=advanced,default=basic,description=The depth of the extraction process. 'advanced' extraction retrieves more data\\, including tables and embedded content\\, with higher success but may increase latency."`
+}
+
+type TavilyExtractResult struct {
+	URL        string   `json:"url" jsonschema:"description=The URL from which the content was extracted."`
+	RawContent string   `json:"raw_content,omitempty" jsonschema:"description=The full content extracted from the page."`
+	Images     []string `json:"images" jsonschema:"description=A list of image URLs extracted from the page."`
+}
+
+type TavilyExtractFailedResult struct {
+	URL   string `json:"url" jsonschema:"description=The URL that failed to be processed."`
+	Error string `json:"error,omitempty" jsonschema:"description=An error message describing why the URL couldn't be processed."`
+}
+
+type TavilyExtractResponse struct {
+	Results       []TavilyExtractResult       `json:"results" jsonschema:"description=A list of extracted content from the provided URLs."`
+	FailedResults []TavilyExtractFailedResult `json:"failed_results,omitempty" jsonschema:"description=A list of URLs that could not be processed."`
+	ResponseTime  float64                     `json:"response_time"`
+}
+
+// Crawl API Request and Response types
+type TavilyCrawlRequest struct {
+	URL            string   `json:"url" jsonschema:"required,description=The root URL to begin the crawl."`
+	MaxDepth       int      `json:"max_depth,omitempty" jsonschema:"default=1,minimum=1,description=Max depth of the crawl. Defines how far from the base URL the crawler can explore."`
+	MaxBreadth     int      `json:"max_breadth,omitempty" jsonschema:"default=20,minimum=1,description=Max number of links to follow per level of the tree (i.e.\\, per page)."`
+	Limit          int      `json:"limit,omitempty" jsonschema:"default=50,minimum=1,description=Total number of links the crawler will process before stopping."`
+	Instructions   string   `json:"instructions,omitempty" jsonschema:"description=Natural language instructions for the crawler."`
+	SelectPaths    []string `json:"select_paths,omitempty" jsonschema_description:"Regex patterns to select only URLs with specific path patterns (e.g., /docs/.*)."`
+	SelectDomains  []string `json:"select_domains,omitempty" jsonschema_description:"Regex patterns to select crawling to specific domains or subdomains (e.g., ^docs\\.example\\.com$)."`
+	ExcludePaths   []string `json:"exclude_paths,omitempty" jsonschema_description:"Regex patterns to exclude URLs with specific path patterns (e.g., /private/.*, /admin/.*)."`
+	ExcludeDomains []string `json:"exclude_domains,omitempty" jsonschema_description:"Regex patterns to exclude specific domains or subdomains from crawling (e.g., ^private\\.example\\.com$)."`
+	AllowExternal  bool     `json:"allow_external,omitempty" jsonschema:"default=false,description=Whether to allow following links that go to external domains."`
+	IncludeImages  bool     `json:"include_images,omitempty" jsonschema:"default=false,description=Whether to include images in the crawl results."`
+	Categories     []string `json:"categories,omitempty" jsonschema_description:"Filter URLs using predefined categories. Available options: Careers, Blog, Documentation, About, Pricing, Community, Developers, Contact, Media, API"`
+	ExtractDepth   string   `json:"extract_depth,omitempty" jsonschema:"enum=basic,enum=advanced,default=basic,description=Advanced extraction retrieves more data\\, including tables and embedded content\\, with higher success but may increase latency."`
+}
+
+type TavilyCrawlResult struct {
+	URL        string `json:"url"`
+	RawContent string `json:"raw_content,omitempty"`
+}
+
+type TavilyCrawlResponse struct {
+	BaseURL      string              `json:"base_url"`
+	Results      []TavilyCrawlResult `json:"results"`
+	ResponseTime float64             `json:"response_time"`
+}
+
+// Map API Request and Response types
+type TavilyMapRequest struct {
+	URL            string   `json:"url" jsonschema:"required,description=The root URL to begin the mapping."`
+	MaxDepth       int      `json:"max_depth,omitempty" jsonschema:"default=1,minimum=1,description=Max depth of the mapping. Defines how far from the base URL the crawler can explore."`
+	MaxBreadth     int      `json:"max_breadth,omitempty" jsonschema:"default=20,minimum=1,description=Max number of links to follow per level of the tree (i.e.\\, per page)."`
+	Limit          int      `json:"limit,omitempty" jsonschema:"default=50,minimum=1,description=Total number of links the crawler will process before stopping."`
+	Instructions   string   `json:"instructions,omitempty" jsonschema_description:"Natural language instructions for the crawler."`
+	SelectPaths    []string `json:"select_paths,omitempty" jsonschema_description:"Regex patterns to select only URLs with specific path patterns (e.g., /docs/.*)."`
+	SelectDomains  []string `json:"select_domains,omitempty" jsonschema_description:"Regex patterns to select crawling to specific domains or subdomains (e.g., ^docs\\.example\\.com$)."`
+	ExcludePaths   []string `json:"exclude_paths,omitempty" jsonschema_description:"Regex patterns to exclude URLs with specific path patterns (e.g., /private/.*, /admin/.*)."`
+	ExcludeDomains []string `json:"exclude_domains,omitempty" jsonschema_description:"Regex patterns to exclude specific domains or subdomains from crawling (e.g., ^private\\.example\\.com$)."`
+	AllowExternal  bool     `json:"allow_external,omitempty" jsonschema:"default=false,description=Whether to allow following links that go to external domains."`
+	Categories     []string `json:"categories,omitempty" jsonschema_description:"Filter URLs using predefined categories. Available options: Careers, Blog, Documentation, About, Pricing, Community, Developers, Contact, Media, API"`
+}
+
+type TavilyMapResponse struct {
+	BaseURL      string   `json:"base_url"`
+	Results      []string `json:"results"`
+	ResponseTime float64  `json:"response_time"`
+}
+
 func (c *TavilyClient) do(ctx context.Context, path string, requestBody []byte) (responseBody []byte, err error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.BaseURL+path, bytes.NewReader(requestBody))
 	if err != nil {
 		return nil, fmt.Errorf("tavily client search, build request: %w", err)
 	}
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.APIKey))
+	request.Header.Add("Content-Type", "application/json")
+
 	response, err := c.HttpClient.Do(request)
 	if err != nil {
 		return nil, fmt.Errorf("tavily client search, call /search api: %w", err)
@@ -149,30 +222,6 @@ func (c *TavilyClient) Search(ctx context.Context, searchRequest *TavilySearchRe
 	return &result, nil
 }
 
-
-type TavilyExtractRequest struct {
-	URLs          []string `json:"urls" jsonschema:"required,description=The URLs to extract content from."`
-	IncludeImages bool     `json:"include_images,omitempty" jsonschema:"default=false,description=Include a list of images extracted from the URLs in the response."`
-	ExtractDepth  string   `json:"extract_depth,omitempty" jsonschema:"enum=basic,enum=advanced,default=basic,description=The depth of the extraction process. 'advanced' extraction retrieves more data\\, including tables and embedded content\\, with higher success but may increase latency."`
-}
-
-type TavilyExtractResult struct {
-	URL        string   `json:"url" jsonschema:"description=The URL from which the content was extracted."`
-	RawContent string   `json:"raw_content,omitempty" jsonschema:"description=The full content extracted from the page."`
-	Images     []string `json:"images" jsonschema:"description=A list of image URLs extracted from the page."`
-}
-
-type TavilyExtractFailedResult struct {
-	URL   string `json:"url" jsonschema:"description=The URL that failed to be processed."`
-	Error string `json:"error,omitempty" jsonschema:"description=An error message describing why the URL couldn't be processed."`
-}
-
-type TavilyExtractResponse struct {
-	Results       []TavilyExtractResult       `json:"results" jsonschema:"description=A list of extracted content from the provided URLs."`
-	FailedResults []TavilyExtractFailedResult `json:"failed_results,omitempty" jsonschema:"description=A list of URLs that could not be processed."`
-	ResponseTime  float64                     `json:"response_time"`
-}
-
 func (c *TavilyClient) Extract(ctx context.Context, request *TavilyExtractRequest) (*TavilyExtractResponse, error) {
 	requestJSON, err := json.Marshal(request)
 	if err != nil {
@@ -188,6 +237,48 @@ func (c *TavilyClient) Extract(ctx context.Context, request *TavilyExtractReques
 	err = json.Unmarshal(responseBody, &result)
 	if err != nil {
 		return nil, fmt.Errorf("tavily client extract, parse response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// Crawl implements the Tavily Crawl API
+func (c *TavilyClient) Crawl(ctx context.Context, request *TavilyCrawlRequest) (*TavilyCrawlResponse, error) {
+	requestJSON, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("tavily client crawl, marshal request: %w", err)
+	}
+
+	responseBody, err := c.do(ctx, "/crawl", requestJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	result := TavilyCrawlResponse{}
+	err = json.Unmarshal(responseBody, &result)
+	if err != nil {
+		return nil, fmt.Errorf("tavily client crawl, parse response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// Map implements the Tavily Map API
+func (c *TavilyClient) Map(ctx context.Context, request *TavilyMapRequest) (*TavilyMapResponse, error) {
+	requestJSON, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("tavily client map, marshal request: %w", err)
+	}
+
+	responseBody, err := c.do(ctx, "/map", requestJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	result := TavilyMapResponse{}
+	err = json.Unmarshal(responseBody, &result)
+	if err != nil {
+		return nil, fmt.Errorf("tavily client map, parse response: %w", err)
 	}
 
 	return &result, nil
